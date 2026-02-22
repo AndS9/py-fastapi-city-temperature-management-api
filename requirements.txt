@@ -3,3 +3,5 @@ alembic
 aiohttp
 asyncio
 aiosqlite
+sqlalchemy
+httpx

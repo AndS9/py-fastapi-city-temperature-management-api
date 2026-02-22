@@ -33,31 +33,34 @@ async def update_temperatures(db: AsyncSession, skip: int = 0, limit: int = 100)
         for city in cities:
 
             url = url_geo_locate(str(city.name))
+            try:
+                geo_data = await client.get(url)
+                geo_data.raise_for_status()
+                geo_data = geo_data.json()
 
-            geo_data = await client.get(url)
-            geo_data.raise_for_status()
-            geo_data = geo_data.json()
+                params = {
+                    "latitude": geo_data["results"][0]["latitude"],
+                    "longitude": geo_data["results"][0]["longitude"],
+                    "hourly": "temperature_2m"
+                }
 
-            params = {
-                "latitude": geo_data["results"][0]["latitude"],
-                "longitude": geo_data["results"][0]["longitude"],
-                "hourly": "temperature_2m"
-            }
+                weather_response = await client.get(URL_WEATHER, params=params)
 
-            weather_response = await client.get(URL_WEATHER, params=params)
+                weather_response.raise_for_status()
 
-            weather_response.raise_for_status()
+                temperatures = weather_response.json()
 
-            temperatures = weather_response.json()
+                format_string = "%Y-%m-%dT%H:%M"
 
-            format_string = "%Y-%m-%dT%H:%M"
+                for time, temp in zip(temperatures["hourly"]["time"], temperatures["hourly"]["temperature_2m"]):
+                    new_temp = models.Temperature(city_id=city.id,
+                                                  date_time=datetime.strptime(time, format_string),
+                                                  temperature=temp)
 
-            for time, temp in zip(temperatures["hourly"]["time"], temperatures["hourly"]["temperature_2m"]):
-                new_temp = models.Temperature(city_id=city.id,
-                                              date_time=datetime.strptime(time, format_string),
-                                              temperature=temp)
+                    db.add(new_temp)
+            except IndexError, KeyError, httpx.HTTPStatusError:
+                pass
 
-                db.add(new_temp)
 
         await db.commit()
 

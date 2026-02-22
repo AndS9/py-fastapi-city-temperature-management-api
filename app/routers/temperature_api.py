@@ -29,15 +29,14 @@ async def update_temperatures(commons: Commons):
 
     return updated_temperatures
 
-
-@router.get("/", response_model=list[schemas.TemperatureOutCity])
-async def get_temperatures(commons: Commons):
-    temperatures = await crud.get_temperatures(db=commons.get("db"),
-                                                skip=commons.get("skip"),
-                                                limit=commons.get("limit"))
-
     return temperatures
 
+
+async def get_temperature_by_city_id(city_id: int, commons: Commons):
+    temperatures = await crud.temperature_by_id(db = commons.get("db"), city_id = city_id,
+                                                skip = commons.get("skip"), limit = commons.get("limit"))
+
+    return temperatures
 
 @router.delete("/")
 async def delete_temperatures(db: ConnectDB):
@@ -45,9 +44,15 @@ async def delete_temperatures(db: ConnectDB):
     return {"message": "Temperatures deleted"}
 
 
-@router.get("/?city_id=", response_model=list[schemas.TemperatureOut])
-async def get_temperature_by_city_id(city_id: int, commons: Commons):
-    temperatures = await crud.temperature_by_id(db = commons.get("db"), city_id = city_id,
-                                                skip = commons.get("skip"), limit = commons.get("limit"))
+@router.get("/", response_model=list[schemas.TemperatureOut])
+async def get_temperature_by_city_id(commons: Commons, city_id: int | None = None):
+    if city_id is None:
+        temperatures = await crud.get_temperatures(db=commons.get("db"),
+                                                    skip=commons.get("skip"),
+                                                    limit=commons.get("limit"))
+
+    else:
+        temperatures = await crud.temperature_by_id(db=commons.get("db"), city_id=city_id,
+                                                    skip=commons.get("skip"), limit=commons.get("limit"))
 
     return temperatures
