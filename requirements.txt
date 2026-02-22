@@ -1,0 +1,5 @@
+fastapi[standard]
+alembic
+aiohttp
+asyncio
+aiosqlite
