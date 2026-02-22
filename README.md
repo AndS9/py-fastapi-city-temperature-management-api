@@ -27,7 +27,7 @@ Stack:
 
 ## How to install and run:
 1. Clone repository:
-`git clone`
+`git clone https://github.com/AndS9/py-fastapi-city-temperature-management-api.git`
 2. Init virtual enviroment and run it:
 `python -m venv .venv`
 

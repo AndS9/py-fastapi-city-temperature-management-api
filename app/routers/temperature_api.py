@@ -15,7 +15,7 @@ router = APIRouter(
 
 ConnectDB = Annotated[AsyncSession, Depends(get_db)]
 
-async def commons_params(db: ConnectDB, skip: int = 0, limit: int | None = None):
+async def commons_params(db: ConnectDB, skip: int | None = None , limit: int | None = None):
     return {"db":db, "skip": skip, "limit": limit}
 
 Commons = Annotated[dict, Depends(commons_params)]
@@ -45,7 +45,7 @@ async def delete_temperatures(db: ConnectDB):
     return {"message": "Temperatures deleted"}
 
 
-@router.get("/{city_id}", response_model=list[schemas.TemperatureOut])
+@router.get("/?city_id=", response_model=list[schemas.TemperatureOut])
 async def get_temperature_by_city_id(city_id: int, commons: Commons):
     temperatures = await crud.temperature_by_id(db = commons.get("db"), city_id = city_id,
                                                 skip = commons.get("skip"), limit = commons.get("limit"))

@@ -35,6 +35,7 @@ async def update_temperatures(db: AsyncSession, skip: int = 0, limit: int = 100)
             url = url_geo_locate(str(city.name))
 
             geo_data = await client.get(url)
+            geo_data.raise_for_status()
             geo_data = geo_data.json()
 
             params = {
@@ -44,6 +45,8 @@ async def update_temperatures(db: AsyncSession, skip: int = 0, limit: int = 100)
             }
 
             weather_response = await client.get(URL_WEATHER, params=params)
+
+            weather_response.raise_for_status()
 
             temperatures = weather_response.json()
 
